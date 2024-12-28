@@ -1,21 +1,20 @@
 public class Task {
-    private int id;
-    private String title;
-    private String description;
-    private String status; // "NEW", "IN_PROGRESS", "DONE"
+    // Уникальный идентификатор задачи
+    protected int id;
+    // Название задачи
+    protected String title;
+    // Описание задачи
+    protected String description;
+    // Статус задачи ("NEW", "IN_PROGRESS", "DONE")
+    protected String status;
 
+    // Конструктор задачи
     public Task(String title, String description) {
+        // Инициализируем название и описание задачи
         this.title = title;
         this.description = description;
-        status = "NEW";
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
+        // Устанавливаем начальный статус задачи как "NEW"
+        this.status = "NEW";
     }
 
     public int getId() {
@@ -26,12 +25,20 @@ public class Task {
         this.id = id;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getDescription() {
         return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getStatus() {

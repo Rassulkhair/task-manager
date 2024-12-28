@@ -1,113 +1,146 @@
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Objects;
 
 public class TaskManager {
+    // Хранилища для задач, эпиков и подзадач
     private HashMap<Integer, Task> tasks = new HashMap<>();
     private HashMap<Integer, Epic> epics = new HashMap<>();
     private HashMap<Integer, Subtask> subtasks = new HashMap<>();
-    private int counter = 1;
 
-    /**
-     * Создание задачи, при создании присваиваем идентификатор задачи
-     *
-     * @param task создаваемая задача
-     */
+    // Счетчик для генерации уникальных идентификаторов
+    private int uniqueId = 1;
+
+    // Создание задачи
     public void createTask(Task task) {
+        // Присваиваем задаче уникальный ID
         task.setId(getUniqueId());
+        // Добавляем задачу в хранилище
         tasks.put(task.getId(), task);
     }
 
-    /**
-     * Получение задачи по идентификатору
-     *
-     * @param id идентификатор задачи
-     * @return найденная задача по идентификатору, null в случае если нет задачи с таким идентификатором
-     */
+    // Создание эпика
+    public void createEpic(Epic epic) {
+        // Присваиваем эпику уникальный ID
+        epic.setId(getUniqueId());
+        // Добавляем эпик в хранилище
+        epics.put(epic.getId(), epic);
+    }
+
+    // Создание подзадачи
+    public void createSubtask(Subtask subtask) {
+        // Получаем эпик, к которому относится подзадача
+        Epic epic = subtask.getEpic();
+        // Проверяем, существует ли эпик в хранилище
+        if (epics.containsKey(epic.getId())) {
+            // Присваиваем подзадаче уникальный ID
+            subtask.setId(getUniqueId());
+
+            // Добавляем подзадачу в эпик
+            epic.addSubtask(subtask);
+            // Обновляем статус эпика, учитывая изменения подзадач
+            epic.updateStatus();
+
+            // Добавляем подзадачу в хранилище
+            subtasks.put(subtask.getId(), subtask);
+        }
+    }
+
+    // Обновление задачи по ID
+    public void update(int id, Task updatedTask) {
+        // Заменяем задачу с заданным ID обновленной версией
+        tasks.put(id, updatedTask);
+    }
+
+    // Получение задачи по ID
     public Task getTaskById(int id) {
+        // Возвращаем задачу с заданным ID или null, если ее нет
         return tasks.get(id);
     }
 
-    /**
-     * Получение списка всех задач
-     *
-     * @return список всех задач
-     */
-    public ArrayList<Task> getAllTasks() {
-        return new ArrayList<>(tasks.values());
-    }
-
-    public void deleteTaskById(int id) {
-        tasks.remove(id);
-    }
-
-    public void createEpic(Epic epic) {
-        // по аналогии как и с createTask
-        epic.setId(getUniqueId());
-        epics.put(epic.getId(), epic);
-
-    }
-
+    // Получение эпика по ID
     public Epic getEpicById(int id) {
-        // по аналогии как и с getTaskById
+        // Возвращаем эпик с заданным ID или null, если его нет
         return epics.get(id);
     }
 
-    public ArrayList<Epic> getAllEpics() {
-        // по аналогии как и с getAllTasks
-        return new ArrayList<>(epics.values());
+    // Получение подзадачи по ID
+    public Subtask getSubtaskById(int id) {
+        // Возвращаем подзадачу с заданным ID или null, если ее нет
+        return subtasks.get(id);
     }
 
-    public void deleteEpicById(int id) {
-        // TODO: Если эпик существует, удаляем все его подзадачи, затем удаляем сам эпик
-        if (Objects.nonNull(getEpicById(id))) {
-            for (Subtask subtask : subtasks.values()) {
-                if (subtask.getEpic().equals(getEpicById(id))) {
-                    deleteSubtaskById(subtask.getId());
-                }
+    // Удаление задачи по ID
+    public void removeTaskById(int id) {
+        // Удаляем задачу из хранилища
+        tasks.remove(id);
+    }
+
+    // Удаление эпика по ID
+    public void removeEpicById(int id) {
+        // Проверяем, существует ли эпик
+        if (epics.containsKey(id)) {
+            Epic epic = epics.get(id);
+            // Проходим по всем подзадачам эпика
+            for (Subtask subtask : epic.getSubtasks()) {
+                // Удаляем подзадачу
+                subtasks.remove(subtask.getId());
             }
+            // Удаляем эпика
             epics.remove(id);
         }
     }
 
-    public void createSubtask(Subtask subtask) {
-        // TODO: необходимо проверить существует ли epic для данной подзадачи
-        //  если существует, присваиваем идентификатор для подзадачи и сохраняем в subtasks
-        if (Objects.nonNull(getEpicById(subtask.getEpic().getId()))) {
-            subtask.setId(getUniqueId());
-            subtasks.put(subtask.getId(), subtask);
-            getEpicById(subtask.getEpic().getId()).addSubtasks(subtask);
+    // Удаление подзадачи по ID
+    public void removeSubtaskById(int id) {
+        // Проверяем, найдена ли подзадача
+        if (subtasks.containsKey(id)) {
+            // Получаем подзадачу для удаления
+            Subtask subtaskToRemove = subtasks.get(id);
+            // Получаем эпик, к которому относится подзадача
+            Epic epic = subtaskToRemove.getEpic();
+            // Удаляем подзадачу из эпика
+            epic.removeSubtaskById(id);
+            // Обновляем статус эпика
+            epic.updateStatus();
+
+            // Удаляем подзадачу из хранилища
+            subtasks.remove(id);
         }
     }
 
-    public Subtask getSubtaskById(int id) {
-        // по аналогии как и с getTaskById
-        return subtasks.get(id);
-
-
+    // Получение списка задач
+    public ArrayList<Task> getTasks() {
+        // Возвращаем список задач, полученный из хранилища
+        return new ArrayList<>(tasks.values());
     }
 
-    public ArrayList<Subtask> getAllSubtasks() {
-        // по аналогии как и с getAllTasks
+    // Получение списка эпиков
+    public ArrayList<Epic> getEpics() {
+        // Возвращаем список эпиков, полученный из хранилища
+        return new ArrayList<>(epics.values());
+    }
+
+    // Получение списка подзадач
+    public ArrayList<Subtask> getSubtasks() {
+        // Возвращаем список подзадач, полученный из хранилища
         return new ArrayList<>(subtasks.values());
-
     }
 
-    public void deleteSubtaskById(int id) {
-        // TODO: Если подзадача существует, то удалить подзадачу из списка эпика (Epic.subtasks)
-        //   удалить саму подзадачу
-        getSubtaskById(id).getEpic().removeSubTask(getSubtaskById(id));
-        subtasks.remove(id);
+    // Получение списка подзадач для данного эпика
+    public ArrayList<Subtask> getSubtasksByEpic(Epic epic) {
+        // Возвращаем список подзадач, относящихся к данному эпику
+        return epic.getSubtasks();
     }
 
-    public void updateEpicStatus(Epic epic) {
-        // 1. если у эпика нет подзадач или все подзадачи имеют статус NEW - то у эпика тоже NEW
-        // 2. если у эпика все подзадачи имеют статус DONE - то у эпика тоже DONE
-        // 3. иначе - IN_PROGRESS
-
+    // Очистка всех хранилищ
+    public void removeAll() {
+        tasks.clear();
+        epics.clear();
+        subtasks.clear();
     }
 
+    // Генерация уникального ID
     private int getUniqueId() {
-        return counter++;
+        return uniqueId++;
     }
 }

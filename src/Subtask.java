@@ -1,16 +1,26 @@
 public class Subtask extends Task {
+    // Эпик, к которому относится подзадача
     private Epic epic;
 
+    // Конструктор подзадачи
     public Subtask(String title, String description, Epic epic) {
+        // Вызываем конструктор суперкласса (Task)
         super(title, description);
+        // Запоминаем эпик, к которому относится подзадача
         this.epic = epic;
     }
 
+    // Переопределенный метод установки статуса подзадачи
+    @Override
+    public void setStatus(String status) {
+        // Устанавливаем статус подзадачи с помощью метода суперкласса
+        super.setStatus(status);
+        // Обновляем статус эпика, к которому относится подзадача
+        epic.updateStatus();
+    }
+
+    // Метод для получения эпика, к которому относится подзадача
     public Epic getEpic() {
         return epic;
-    }
-
-    public void setEpic(Epic epic) {
-        this.epic = epic;
     }
 }
